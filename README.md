@@ -6,7 +6,6 @@ DroneBlocks proof of concept for block coding with PX4 based aircraft and compan
 2. source venv/bin/activate (MacOS)
 3. pip install -r requirements.txt
     * If you end up seeing an error about Python modules not being found be sure to upgrade your pip and this should address the issue: **python -m pip install pip --upgrade**
-4. flask run --host=0.0.0.0
-    * The host argument allows the Flask server to be accessible outside localhost
+4. python app.py
 
 

@@ -10,11 +10,16 @@ def main():
 
 @app.route("/takeoff")
 async def takeoff():
-    drone = System()
-    await drone.connect()
+    await drone.connect("udp://:14540")
     await drone.action.arm()
     await drone.action.takeoff()
     return "drone is taking off"
+
+@app.route("/land")
+async def land():
+    await drone.action.land()
+    await drone.action.disarm()
+    return "drone is landing"
 
 
 @app.route('/video_stream')
@@ -91,24 +96,27 @@ def droneblocks(path):
     return send_from_directory(static_file_dir, path)
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 
-#     # Initialize the drone class
-#     drone = Drone(is_aruco_tracking_enabled=True)
+    # # Initialize the drone class
+    # drone = Drone(is_aruco_tracking_enabled=True)
 
-#     # Camera for stream, photo, video
-#     camera = Camera(drone)
+    # # Camera for stream, photo, video
+    # camera = Camera(drone)
 
-#     # Udp for sending commands
-#     udp = UDP()
-#     udp.start_listening()
+    # # Udp for sending commands
+    # udp = UDP()
+    # udp.start_listening()
 
-#     # Create the mission handler
-#     mission = Mission(udp, camera, drone)
+    # # Create the mission handler
+    # mission = Mission(udp, camera, drone)
 
-#     # Handle Tello's state information
-#     telemetry = Telemetry(drone)
-#     telemetry.receive_telemetry()
+    # # Handle Tello's state information
+    # telemetry = Telemetry(drone)
+    # telemetry.receive_telemetry()
 
-#     # Fire up the app
-#     app.run()
+    # Initialize the drone object
+    drone = System()
+   
+    # Fire up the app
+    app.run(host="0.0.0.0")
