@@ -10,17 +10,42 @@ def main():
 
 @app.route("/takeoff")
 async def takeoff():
+    drone = System()
     await drone.connect("udp://:14540")
-    await drone.action.arm()
+
+    if (await is_in_air(drone)):
+        return "drone is already in air"
+    elif (await is_armed(drone) == False):
+        await drone.action.arm()
+    
     await drone.action.takeoff()
+
     return "drone is taking off"
 
 @app.route("/land")
 async def land():
+    drone = System()
+    await drone.connect("udp://:14540")
     await drone.action.land()
-    await drone.action.disarm()
     return "drone is landing"
 
+async def is_armed(drone):
+    async for is_armed in drone.telemetry.armed():
+        return is_armed
+
+async def is_in_air(drone):
+    async for is_in_air in drone.telemetry.in_air():
+        return is_in_air
+
+@app.route("/test")
+async def test():
+    drone = System()
+    await drone.connect("udp://:14540")
+
+    if(await is_armed(drone) and await is_in_air(drone)):
+        return "drone is armed and drone is in air"
+    else:
+        return "else"
 
 @app.route('/video_stream')
 def video_feed():
