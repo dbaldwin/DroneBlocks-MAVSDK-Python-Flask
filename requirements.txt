@@ -4,11 +4,14 @@ asgiref==3.4.1
 click==8.0.1
 flash==1.0.3
 Flask==2.0.1
+Flask-MQTT==1.1.1
 grpcio==1.38.1
 itsdangerous==2.0.1
 Jinja2==3.0.1
 MarkupSafe==2.0.1
 mavsdk==0.18.0
+paho-mqtt==1.5.1
+pkg-resources==0.0.0
 protobuf==3.17.3
 six==1.16.0
 Werkzeug==2.0.1

@@ -1,8 +1,15 @@
 import os
+import json
 from flask import Flask, Response, render_template, request, jsonify, send_from_directory
+from flask_mqtt import Mqtt
 from mavsdk import System
 
 app = Flask(__name__)
+app.config['MQTT_BROKER_URL'] = '127.0.0.1'  # use the free broker from HIVEMQ
+app.config['MQTT_BROKER_PORT'] = 18830  # default port for non-tls connection
+#app.config['MQTT_USERNAME'] = 'dennistest'  # set the username here if you need authentication for the broker
+#app.config['MQTT_PASSWORD'] = 'Testing123'  # set the password here if the broker demands authentication
+#app.config['MQTT_KEEPALIVE'] = 5  # set the time interval for sending a ping to the broker to 5 seconds
 
 @app.route("/")
 def main():
@@ -28,6 +35,14 @@ async def land():
     await drone.connect("udp://:14540")
     await drone.action.land()
     return "drone is landing"
+
+@app.route("/mqtt")
+def mqtt():
+    mqtt = Mqtt(app)
+    data = {"servo": "servo_123", "action": "open"}
+    mqtt.publish('vrc/pcc/set_servo_open_close', json.dumps(data))
+    return "mqtt message published"
+
 
 async def is_armed(drone):
     async for is_armed in drone.telemetry.armed():
