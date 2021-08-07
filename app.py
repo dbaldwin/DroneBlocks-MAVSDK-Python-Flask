@@ -3,6 +3,8 @@ import json
 from flask import Flask, Response, render_template, request, jsonify, send_from_directory
 from flask_mqtt import Mqtt
 from mavsdk import System
+from mavsdk.offboard import (OffboardError, VelocityNedYaw)
+import asyncio
 
 app = Flask(__name__)
 app.config['MQTT_BROKER_URL'] = '127.0.0.1'  # use the free broker from HIVEMQ
@@ -17,9 +19,10 @@ def main():
 
 @app.route("/takeoff")
 async def takeoff():
-    drone = System()
+    drone = System() # Figure out how to pull this out into a global
     await drone.connect("udp://:14540")
 
+    # Let's pull this logic out into its own method
     if (await is_in_air(drone)):
         return "drone is already in air"
     elif (await is_armed(drone) == False):
@@ -33,8 +36,39 @@ async def takeoff():
 async def land():
     drone = System()
     await drone.connect("udp://:14540")
-    await drone.action.land()
-    return "drone is landing"
+
+    if (await is_in_air(drone) == False):
+        return "drone is already on the ground"
+    else:
+        await drone.action.land()
+        return "drone is landing"
+
+@app.route("/yaw")
+async def yaw():
+
+    drone = System()
+    await drone.connect("udp://:14540")
+    await drone.action.arm()
+
+    try:
+        #await drone.offboard.set_velocity_body(VelocityBodyYawspeed(0.0, 0.0, 0.0, 0.0))
+        await drone.offboard.set_velocity_ned(VelocityNedYaw(0.0, 0.0, 0.0, 0.0))
+        await drone.offboard.start()
+    except OffboardError as error:
+        print(f"Starting offboard mode failed with error code: {error._result.result}")
+        return "error starting offboard"
+
+    await drone.offboard.set_velocity_ned(VelocityNedYaw(0.0, 0.0, -1.5, -90))
+    await asyncio.sleep(10)
+
+    try:
+        await drone.offboard.stop()
+    except OffboardError as error:
+        print(f"Stopping offboard mode failed with error code: {error._result.result}")
+        return "error stopping offboard"
+
+    return "yaw complete"
+
 
 @app.route("/mqtt")
 def mqtt():
